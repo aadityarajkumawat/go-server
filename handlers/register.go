@@ -55,7 +55,7 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	cookie := utils.BuildCookie(loggedUser)
-	utils.SetAndStoreCookie(c, cookie, newUser, cookieStore)
+	utils.SetAndStoreCookieRegister(c, cookie, newUser, cookieStore)
 
 	c.IndentedJSON(http.StatusCreated, response)
 }

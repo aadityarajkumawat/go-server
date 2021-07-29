@@ -2,38 +2,51 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"restful.go/restapi/cookies"
+	"restful.go/restapi/dbcalls"
+	"restful.go/restapi/structs"
+	"restful.go/restapi/utils"
 )
 
-const FIND_USER = ""
+const FIND_USER = "SELECT * FROM users WHERE username = $1 LIMIT 1"
 
-type loginUser struct {
-	UserID string `json:"userID"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type loginUserResponse struct {
-	Status string `json:"status"`
-	Error string `json:"error"`
-}
+type loginUser = structs.LoginUser
+type loginUserResponse = structs.LoginUserResponse
 
 func LoginHandler(c *gin.Context) {
-	//cookieStore := cookies.CookieStoreI
-	//var user loginUser
-	//var response loginUserResponse
-	//db, err := dbcalls.GetDB().DB, c.BindJSON(&user)
-	//utils.CheckError(err)
+	cookieStore := cookies.CookieStoreI
+	var user loginUser
+	var response loginUserResponse
+	db, err := dbcalls.GetDB().DB, c.BindJSON(&user)
+	utils.CheckError(err)
 
-	//c.Request.Body
+	row, err := db.Query(FIND_USER, user.Username)
+	utils.CheckError(err)
 
+	var loggedUser = ""
 
-	//buf := new(bytes.Buffer)
-	//_, err := buf.ReadFrom(c.Request.Body)
-	//if err != nil {
-	//	return
-	//}
-	//newStr := buf.String()
-	//fmt.Println(newStr)
+	if row.Next() {
+		response.Status = "Logged In"
+		response.Error = ""
 
-	//_, err = db.Query()
+		var userID string
+		var username string
+		var password string
+		err = row.Scan(&userID, &username, &password)
+		utils.CheckError(err)
+
+		loggedUser = userID
+		user.UserID = loggedUser
+
+		cookie := utils.BuildCookie(loggedUser)
+		utils.SetAndStoreCookieLogin(c, cookie, user, cookieStore)
+
+		c.IndentedJSON(http.StatusCreated, response)
+		return
+	} else {
+		response.Status = "Server Error"
+		response.Error = "User doesn't exist"
+		c.IndentedJSON(http.StatusCreated, response)
+	}
 }

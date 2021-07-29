@@ -9,8 +9,15 @@ import (
 )
 
 type registerUser = structs.RegisterUser
+type loginUser = structs.LoginUser
 
-func SetAndStoreCookie(c *gin.Context, cookie http.Cookie, loggedUser registerUser, cookieStore *cookies.CookieStore) {
+func SetAndStoreCookieRegister(c *gin.Context, cookie http.Cookie, loggedUser registerUser, cookieStore *cookies.CookieStore) {
+	http.SetCookie(c.Writer, &cookie)
+	storedCookie := cookies.CookieI{UserSessionID: loggedUser.UserID, Username: loggedUser.Username, Password: loggedUser.Password}
+	cookieStore.SetCookie(storedCookie)
+}
+
+func SetAndStoreCookieLogin(c *gin.Context, cookie http.Cookie, loggedUser loginUser, cookieStore *cookies.CookieStore) {
 	http.SetCookie(c.Writer, &cookie)
 	storedCookie := cookies.CookieI{UserSessionID: loggedUser.UserID, Username: loggedUser.Username, Password: loggedUser.Password}
 	cookieStore.SetCookie(storedCookie)
