@@ -1,37 +1,29 @@
 package handlers
 
 import (
-	"database/sql"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"restful.go/restapi/cookies"
 	"restful.go/restapi/dbcalls"
+	"restful.go/restapi/structs"
 	"restful.go/restapi/utils"
 	s "strings"
 )
 
-type registerUser struct {
-	UserID   string `json:"userID"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
+const INSERT_USER = "INSERT INTO users(username, password) VALUES ($1, $2) RETURNING user_id;"
+const SELECT_LOGGED_USER = "SELECT * FROM users WHERE username = $1 LIMIT 1"
 
-type registeredUserResponse struct {
-	Status string `json:"status"`
-	Error  string `json:"error"`
-}
+type registeredUserResponse = structs.RegisteredUserResponse
+type registerUser = structs.RegisterUser
 
 func RegisterHandler(c *gin.Context) {
+	cookieStore := cookies.CookieStoreI
 	var newUser registerUser
 	var response registeredUserResponse
-	var db = dbcalls.GetDB().DB
+	db, err := dbcalls.GetDB().DB, c.BindJSON(&newUser)
+	utils.CheckError(err)
 
-	if err := c.BindJSON(&newUser); err != nil {
-		return
-	}
-
-	var query = "INSERT INTO users(username, password) VALUES ($1, $2) RETURNING user_id;"
-	_, err := db.Exec(query, newUser.Username, newUser.Password)
-
+	_, err = db.Exec(INSERT_USER, newUser.Username, newUser.Password)
 	if err != nil {
 		response.Status = "Server Error"
 		errStr := err.Error()
@@ -46,8 +38,7 @@ func RegisterHandler(c *gin.Context) {
 	response.Status = "Account created!"
 	response.Error = "--no-error--"
 
-	var rows *sql.Rows
-	rows, err = db.Query("SELECT * FROM users WHERE username = $1 LIMIT 1", newUser.Username)
+	rows, err := db.Query(SELECT_LOGGED_USER, newUser.Username)
 	utils.CheckError(err)
 
 	var loggedUser = ""
@@ -60,10 +51,11 @@ func RegisterHandler(c *gin.Context) {
 		utils.CheckError(err)
 
 		loggedUser = userID
+		newUser.UserID = loggedUser
 	}
 
 	cookie := utils.BuildCookie(loggedUser)
-	utils.SetAndStoreCookie(c, cookie, loggedUser)
+	utils.SetAndStoreCookie(c, cookie, newUser, cookieStore)
 
 	c.IndentedJSON(http.StatusCreated, response)
 }
