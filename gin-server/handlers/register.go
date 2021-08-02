@@ -1,13 +1,14 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+	s "strings"
+
+	"github.com/gin-gonic/gin"
 	"restful.go/restapi/cookies"
 	"restful.go/restapi/dbcalls"
 	"restful.go/restapi/structs"
 	"restful.go/restapi/utils"
-	s "strings"
 )
 
 const INSERT_USER = "INSERT INTO users(username, password) VALUES ($1, $2) RETURNING user_id;"

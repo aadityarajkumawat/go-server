@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
 	"io"
 	"os"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 	"restful.go/restapi/dbcalls"
 	"restful.go/restapi/handlers"
 	"restful.go/restapi/utils"
 )
-
 
 func main() {
 	router := gin.Default()

@@ -12,12 +12,12 @@ type RegisteredUserResponse struct {
 }
 
 type LoginUser struct {
-	UserID string `json:"userID"`
+	UserID   string `json:"userID"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type LoginUserResponse struct {
 	Status string `json:"status"`
-	Error string `json:"error"`
+	Error  string `json:"error"`
 }

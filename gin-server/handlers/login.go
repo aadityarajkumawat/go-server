@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 	"restful.go/restapi/cookies"
 	"restful.go/restapi/dbcalls"
 	"restful.go/restapi/structs"
